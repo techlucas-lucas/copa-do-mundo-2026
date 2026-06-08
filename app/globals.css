@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+/* ── Design Tokens ───────────────────────────────────────────── */
+:root {
+  --pitch:      #166534; /* green-800  – navbar / accents     */
+  --pitch-dark: #14532d; /* green-900  – footer / borders     */
+  --gold:       #facc15; /* yellow-400 – primary accent        */
+  --gold-dim:   #ca8a04; /* yellow-600 – muted gold            */
+  --surface-1:  #030712; /* gray-950   – page bg               */
+  --surface-2:  #111827; /* gray-900   – card bg               */
+  --surface-3:  #1f2937; /* gray-800   – subtle borders        */
+  --text-1:     #f9fafb; /* gray-50    – headings              */
+  --text-2:     #9ca3af; /* gray-400   – secondary             */
+  --text-3:     #6b7280; /* gray-500   – muted                 */
+  --live:       #ef4444; /* red-500    – live badge            */
+
+  --radius-sm:  6px;
+  --radius-md:  12px;
+  --radius-lg:  16px;
+
+  /* z-index scale */
+  --z-base:    10;
+  --z-overlay: 20;
+  --z-modal:   30;
+  --z-toast:   50;
+}
+
+/* ── Base ────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  font-size: 16px; /* never below 16px on mobile */
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--surface-1);
+  color: var(--text-1);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  /* clip (not hidden) — prevents body overflow but lets child scroll containers work */
+  overflow-x: clip;
+}
+
+/* ── Focus ring (accessibility) ─────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ── Reduced motion ─────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Skeleton shimmer animation ─────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-3) 25%,
+    #374151 50%,
+    var(--surface-3) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease infinite;
+  border-radius: var(--radius-sm);
+}
+
+/* ── Live pulse ──────────────────────────────────────────────── */
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--live);
+  animation: live-pulse 1.2s ease-in-out infinite;
+}
+
+/* ── Bracket connector lines ────────────────────────────────── */
+.bracket-connector {
+  border-color: #374151; /* gray-700 */
+}
