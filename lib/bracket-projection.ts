@@ -8,14 +8,14 @@ import type { Match, Team, Group, Standing } from "@/types/football";
  *   Slot 1  (M77): W-I  vs 3rd(C/D/F/G/H)   → R16 M89 ┘ → QF M97 ┐
  *   Slot 2  (M73): 2nd-A vs 2nd-B            → R16 M90 ┐            │
  *   Slot 3  (M75): W-F  vs 2nd-C             → R16 M90 ┘ → QF M97 ┘ → SF-L
- *   Slot 4  (M76): W-C  vs 2nd-F             → R16 M91 ┐            │
- *   Slot 5  (M78): 2nd-E vs 2nd-I            → R16 M91 ┘ → QF M99 ┐ │
- *   Slot 6  (M79): W-A  vs 3rd(C/E/F/H/I)   → R16 M92 ┐            │
- *   Slot 7  (M80): W-L  vs 3rd(E/H/I/J/K)   → R16 M92 ┘ → QF M99 ┘ ┘
- *   Slot 8  (M83): 2nd-K vs 2nd-L            → R16 M93 ┐            ┐
- *   Slot 9  (M84): W-H  vs 2nd-J             → R16 M93 ┘ → QF M98 ┐ │
- *   Slot 10 (M81): W-D  vs 3rd(B/E/F/I/J)   → R16 M94 ┐            │
- *   Slot 11 (M82): W-G  vs 3rd(A/E/H/I/J)   → R16 M94 ┘ → QF M98 ┘ → SF-R
+ *   Slot 4  (M83): 2nd-K vs 2nd-L            → R16 M93 ┐            │
+ *   Slot 5  (M84): W-H  vs 2nd-J             → R16 M93 ┘ → QF M98 ┐ │
+ *   Slot 6  (M81): W-D  vs 3rd(B/E/F/I/J)   → R16 M94 ┐            │
+ *   Slot 7  (M82): W-G  vs 3rd(A/E/H/I/J)   → R16 M94 ┘ → QF M98 ┘ ┘
+ *   Slot 8  (M76): W-C  vs 2nd-F             → R16 M91 ┐            ┐
+ *   Slot 9  (M78): 2nd-E vs 2nd-I            → R16 M91 ┘ → QF M99 ┐ │
+ *   Slot 10 (M79): W-A  vs 3rd(C/E/F/H/I)   → R16 M92 ┐            │
+ *   Slot 11 (M80): W-L  vs 3rd(E/H/I/J/K)   → R16 M92 ┘ → QF M99 ┘ → SF-R
  *   Slot 12 (M86): W-J  vs 2nd-H             → R16 M95 ┐            │
  *   Slot 13 (M88): 2nd-D vs 2nd-G            → R16 M95 ┘ → QF M100 ┐│
  *   Slot 14 (M85): W-B  vs 3rd(E/F/G/I/J)   → R16 M96 ┐             │
@@ -132,8 +132,8 @@ interface R32SlotDef { home: SlotDef; away: SlotDef }
  *
  * Slot pair → R16 → QF mapping:
  *   (0,1)→M89, (2,3)→M90  →  QF M97  ┐
- *   (4,5)→M91, (6,7)→M92  →  QF M99  ┘ → SF-L
- *   (8,9)→M93,(10,11)→M94 →  QF M98  ┐
+ *   (4,5)→M93, (6,7)→M94  →  QF M98  ┘ → SF-L
+ *   (8,9)→M91,(10,11)→M92 →  QF M99  ┐
  *  (12,13)→M95,(14,15)→M96 → QF M100 ┘ → SF-R
  */
 export const COPA_2026_R32: R32SlotDef[] = [
@@ -146,23 +146,23 @@ export const COPA_2026_R32: R32SlotDef[] = [
   { home: { type: "runner", group: "A" }, away: { type: "runner", group: "B" } },
   // Slot 3 — Match 75 (June 29, Guadalajara)
   { home: { type: "winner", group: "F" }, away: { type: "runner", group: "C" } },
-  // Slot 4 — Match 76 (June 29, Houston)
-  { home: { type: "winner", group: "C" }, away: { type: "runner", group: "F" } },
-  // Slot 5 — Match 78 (June 30, Arlington)
-  { home: { type: "runner", group: "E" }, away: { type: "runner", group: "I" } },
-  // Slot 6 — Match 79 (June 30, Mexico City)
-  { home: { type: "winner", group: "A" }, away: { type: "best3", eligibleGroups: ["C","E","F","H","I"] } },
-  // Slot 7 — Match 80 (July 1, Atlanta)
-  { home: { type: "winner", group: "L" }, away: { type: "best3", eligibleGroups: ["E","H","I","J","K"] } },
-  // ── Right half ───────────────────────────────────────────────────────────────
-  // Slot 8 — Match 83 (July 2, Toronto)
+  // Slot 4 — Match 83 (July 2, Toronto)
   { home: { type: "runner", group: "K" }, away: { type: "runner", group: "L" } },
-  // Slot 9 — Match 84 (July 2, Inglewood)
+  // Slot 5 — Match 84 (July 2, Inglewood)
   { home: { type: "winner", group: "H" }, away: { type: "runner", group: "J" } },
-  // Slot 10 — Match 81 (July 1, Santa Clara)
+  // Slot 6 — Match 81 (July 1, Santa Clara)
   { home: { type: "winner", group: "D" }, away: { type: "best3", eligibleGroups: ["B","E","F","I","J"] } },
-  // Slot 11 — Match 82 (July 1, Seattle)
+  // Slot 7 — Match 82 (July 1, Seattle)
   { home: { type: "winner", group: "G" }, away: { type: "best3", eligibleGroups: ["A","E","H","I","J"] } },
+  // ── Right half ───────────────────────────────────────────────────────────────
+  // Slot 8 — Match 76 (June 29, Houston)
+  { home: { type: "winner", group: "C" }, away: { type: "runner", group: "F" } },
+  // Slot 9 — Match 78 (June 30, Arlington)
+  { home: { type: "runner", group: "E" }, away: { type: "runner", group: "I" } },
+  // Slot 10 — Match 79 (June 30, Mexico City)
+  { home: { type: "winner", group: "A" }, away: { type: "best3", eligibleGroups: ["C","E","F","H","I"] } },
+  // Slot 11 — Match 80 (July 1, Atlanta)
+  { home: { type: "winner", group: "L" }, away: { type: "best3", eligibleGroups: ["E","H","I","J","K"] } },
   // Slot 12 — Match 86 (July 3, Miami Gardens)
   { home: { type: "winner", group: "J" }, away: { type: "runner", group: "H" } },
   // Slot 13 — Match 88 (July 3, Arlington)
