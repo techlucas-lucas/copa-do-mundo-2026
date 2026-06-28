@@ -77,10 +77,9 @@ function TeamCell({
       {/* TLA */}
       <span
         className={`font-bold leading-none ${
-          won                   ? "text-yellow-400"
-          : resolved?.isProjected ? "text-gray-400"
-          : isTbd               ? "text-gray-600"
-          :                        "text-white"
+          won    ? "text-yellow-400"
+          : isTbd ? "text-gray-600"
+          :         "text-white"
         }`}
         style={{ fontSize: 8 }}
       >
@@ -237,17 +236,8 @@ function BracketRow({
 }
 
 // ── Phase banner ──────────────────────────────────────────────────────────────
-const NEXT_LABEL: Partial<Record<TournamentPhase, string>> = {
-  GROUP_STAGE:    "projetando Dezesseis Avos",
-  ROUND_OF_32:    "projetando Oitavas",
-  ROUND_OF_16:    "projetando Quartas",
-  QUARTER_FINALS: "projetando Semis",
-  SEMI_FINALS:    "projetando Final",
-};
-
 function PhaseBanner({ phase }: { phase: TournamentPhase }) {
   const label  = PHASE_LABELS[phase];
-  const next   = NEXT_LABEL[phase];
   const isLive = ["ROUND_OF_32","ROUND_OF_16","QUARTER_FINALS","SEMI_FINALS","FINAL"].includes(phase);
   return (
     <div className="flex flex-wrap items-center gap-2 mb-4 p-3 rounded-lg bg-gray-900 border border-gray-800 text-xs">
@@ -255,12 +245,6 @@ function PhaseBanner({ phase }: { phase: TournamentPhase }) {
       <span className="font-semibold text-white">
         Fase atual: <span className="text-yellow-400">{label}</span>
       </span>
-      {next && (
-        <span className="text-blue-400 flex items-center gap-1">
-          <span className="border border-blue-800 rounded px-1 text-[9px] font-black">PROJ</span>
-          {next}
-        </span>
-      )}
       {phase === "FINISHED" && (
         <span className="text-green-400 font-semibold">Torneio encerrado</span>
       )}
@@ -353,11 +337,7 @@ export default function BracketClient({ initial }: { initial: BracketResponse })
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-8 h-px border-t border-dashed border-gray-600" />
-          <span>Projetado</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-[9px] font-black text-blue-400 border border-blue-900 rounded px-1 py-0.5">PROJ</span>
-          <span>Seleção projetada pela classificação</span>
+          <span>A definir</span>
         </div>
       </div>
 

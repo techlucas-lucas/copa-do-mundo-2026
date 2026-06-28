@@ -189,6 +189,22 @@ function normalizeStr(s: string): string {
   return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
 }
 
+// Find the API R32 match that corresponds to a named slot, by matching team names
+// (order-independent, handles both home/away orientations)
+function findNamedApiMatch(apiMatches: Match[], homeNames: string[], awayNames: string[]): Match | undefined {
+  const hn = homeNames.map(normalizeStr);
+  const an = awayNames.map(normalizeStr);
+  return apiMatches.find(m => {
+    const h = normalizeStr(m.homeTeam?.name ?? "");
+    const a = normalizeStr(m.awayTeam?.name ?? "");
+    const fwd = hn.some(n => h === n || h.includes(n) || n.includes(h)) &&
+                an.some(n => a === n || a.includes(n) || n.includes(a));
+    const rev = an.some(n => h === n || h.includes(n) || n.includes(h)) &&
+                hn.some(n => a === n || a.includes(n) || n.includes(a));
+    return fwd || rev;
+  });
+}
+
 function findTeamInStandings(standings: Group[], names: string[]): Team | null {
   const needles = names.map(normalizeStr);
   for (const group of standings) {
@@ -415,8 +431,12 @@ export function buildFullBracket(
 
   const apiR32 = byStage("ROUND_OF_32");
   const r32: ProjectedMatch[] = COPA_2026_R32.map((slot, i): ProjectedMatch => {
-    const apiMatch = apiR32[i];
-    // Only use API match when both sides have real confirmed team names
+    // For named slots, find the matching API match by team name — NOT by date-order index,
+    // because the API sorts by date while slots are in bracket-position order.
+    const apiMatch = (slot.home.type === "named" && slot.away.type === "named")
+      ? findNamedApiMatch(apiR32, slot.home.names, slot.away.names)
+      : apiR32[i];
+
     if (apiMatch &&
         !isPlaceholderName(apiMatch.homeTeam?.name) &&
         !isPlaceholderName(apiMatch.awayTeam?.name)) {
