@@ -1,9 +1,11 @@
 import { getMatches, getStandings } from "@/lib/football-api";
 import { buildFullBracket } from "@/lib/bracket-projection";
 
+// football-data.org uses LAST_32/LAST_16 — include both variants
 const KNOCKOUT_STAGES = new Set([
-  "ROUND_OF_32", "ROUND_OF_16", "QUARTER_FINALS",
-  "SEMI_FINALS", "FINAL", "THIRD_PLACE",
+  "ROUND_OF_32", "LAST_32",
+  "ROUND_OF_16", "LAST_16",
+  "QUARTER_FINALS", "SEMI_FINALS", "FINAL", "THIRD_PLACE",
 ]);
 
 export async function GET() {

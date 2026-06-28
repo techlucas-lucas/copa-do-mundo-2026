@@ -53,10 +53,19 @@ function phaseGte(a: TournamentPhase, b: TournamentPhase): boolean {
   return PHASE_ORDER.indexOf(a) >= PHASE_ORDER.indexOf(b);
 }
 
+// football-data.org uses LAST_32/LAST_16; normalise to the canonical names we use internally
+const STAGE_ALIASES: Record<string, string> = {
+  LAST_32:  "ROUND_OF_32",
+  LAST_16:  "ROUND_OF_16",
+};
+function canonicalStage(s: string): string { return STAGE_ALIASES[s] ?? s; }
+
 export function detectPhase(allMatches: Match[], apiKnockout: Match[]): TournamentPhase {
   // Only count matches with real (non-empty) team names — excludes FIFA placeholder matches
-  const real = (s: string) =>
-    apiKnockout.filter(m => m.stage === s && m.homeTeam?.name && m.awayTeam?.name);
+  const real = (canonical: string) =>
+    apiKnockout.filter(m =>
+      canonicalStage(m.stage) === canonical && m.homeTeam?.name && m.awayTeam?.name
+    );
   const allDone = (ms: Match[]) =>
     ms.length > 0 && ms.every(m => m.status === "FINISHED");
 
@@ -400,9 +409,10 @@ export function buildFullBracket(
   const best3Idx = { n: 0 }; // for resolveApiTeam fallback
 
   // Only use API matches with confirmed team names
-  const byStage = (s: string) =>
+  // normalise LAST_32 → ROUND_OF_32, LAST_16 → ROUND_OF_16, etc.
+  const byStage = (canonical: string) =>
     apiKnockout
-      .filter(m => m.stage === s && m.homeTeam?.name && m.awayTeam?.name)
+      .filter(m => canonicalStage(m.stage) === canonical && m.homeTeam?.name && m.awayTeam?.name)
       .sort((a, b) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime());
 
   function fromApi(m: Match): ProjectedMatch {
