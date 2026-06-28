@@ -3,23 +3,16 @@ import type { Match, Team, Group, Standing } from "@/types/football";
 /* ─────────────────────────────────────────────────────────────────────────────
  * Copa do Mundo 2026 — phase-aware bracket projection
  *
- * R32 hardcoded with confirmed FIFA pairings (June 2026):
- *   Slot 0:  África do Sul  vs Canadá
- *   Slot 1:  Brasil         vs Japão
- *   Slot 2:  Alemanha       vs Paraguai
- *   Slot 3:  Holanda        vs Marrocos
- *   Slot 4:  Costa do Marfim vs Noruega
- *   Slot 5:  França         vs Suécia
- *   Slot 6:  México         vs Equador
- *   Slot 7:  Inglaterra     vs RD Congo
- *   Slot 8:  Bélgica        vs Senegal
- *   Slot 9:  Estados Unidos vs Bósnia
- *   Slot 10: Espanha        vs Áustria
- *   Slot 11: Portugal       vs Croácia
- *   Slot 12: Suíça          vs Argélia
- *   Slot 13: Austrália      vs Egito
- *   Slot 14: Argentina      vs Cabo Verde
- *   Slot 15: Colômbia       vs Gana
+ * R32 hardcoded with confirmed FIFA pairings (June 2026).
+ * Slot order preserves official bracket crossings:
+ *   Slots 0,1  → R16 M89 (Alemanha/Paraguai vs França/Suécia)        ┐ QF M97 → SF-L
+ *   Slots 2,3  → R16 M90 (África do Sul/Canadá vs Holanda/Marrocos)  ┘
+ *   Slots 4,5  → R16 M93 (Portugal/Croácia vs Espanha/Áustria)       ┐ QF M98 → SF-L
+ *   Slots 6,7  → R16 M94 (EUA/Bósnia vs Bélgica/Senegal)            ┘
+ *   Slots 8,9  → R16 M91 (Brasil/Japão vs Costa do Marfim/Noruega)   ┐ QF M99 → SF-R
+ *   Slots 10,11 → R16 M92 (México/Equador vs Inglaterra/RD Congo)    ┘
+ *   Slots 12,13 → R16 M95 (Argentina/Cabo Verde vs Austrália/Egito)  ┐ QF M100→ SF-R
+ *   Slots 14,15 → R16 M96 (Suíça/Argélia vs Colômbia/Gana)          ┘
  *
  * Phase-aware — only projects ONE round ahead:
  *   GROUP_STAGE → R32 PROJ,  R16/QF/SF/Final = TBD
@@ -139,38 +132,46 @@ interface R32SlotDef { home: SlotDef; away: SlotDef }
  */
 export const COPA_2026_R32: R32SlotDef[] = [
   // ── Left half ────────────────────────────────────────────────────────────────
-  // Slot 0
-  { home: { type: "named", names: ["África do Sul", "South Africa"] },       away: { type: "named", names: ["Canadá", "Canada"] } },
-  // Slot 1
-  { home: { type: "named", names: ["Brasil", "Brazil"] },                    away: { type: "named", names: ["Japão", "Japan"] } },
-  // Slot 2
+  // Slots 0,1 → R16 M89 (vencedores se enfrentam nas oitavas)
+  // Slot 0 — M74
   { home: { type: "named", names: ["Alemanha", "Germany"] },                 away: { type: "named", names: ["Paraguai", "Paraguay"] } },
-  // Slot 3
-  { home: { type: "named", names: ["Holanda", "Netherlands", "Holland"] },   away: { type: "named", names: ["Marrocos", "Morocco"] } },
-  // Slot 4
-  { home: { type: "named", names: ["Costa do Marfim", "Ivory Coast", "Côte d'Ivoire"] }, away: { type: "named", names: ["Noruega", "Norway"] } },
-  // Slot 5
+  // Slot 1 — M77
   { home: { type: "named", names: ["França", "France"] },                    away: { type: "named", names: ["Suécia", "Sweden"] } },
-  // Slot 6
-  { home: { type: "named", names: ["México", "Mexico"] },                    away: { type: "named", names: ["Equador", "Ecuador"] } },
-  // Slot 7
-  { home: { type: "named", names: ["Inglaterra", "England"] },               away: { type: "named", names: ["RD Congo", "DR Congo", "Congo DR", "Democratic Republic of Congo"] } },
-  // ── Right half ───────────────────────────────────────────────────────────────
-  // Slot 8
-  { home: { type: "named", names: ["Bélgica", "Belgium"] },                  away: { type: "named", names: ["Senegal"] } },
-  // Slot 9
-  { home: { type: "named", names: ["Estados Unidos", "United States", "USA"] }, away: { type: "named", names: ["Bósnia", "Bosnia", "Bosnia and Herzegovina"] } },
-  // Slot 10
-  { home: { type: "named", names: ["Espanha", "Spain"] },                    away: { type: "named", names: ["Áustria", "Austria"] } },
-  // Slot 11
+  // Slots 2,3 → R16 M90
+  // Slot 2 — M73
+  { home: { type: "named", names: ["África do Sul", "South Africa"] },       away: { type: "named", names: ["Canadá", "Canada"] } },
+  // Slot 3 — M75
+  { home: { type: "named", names: ["Holanda", "Netherlands", "Holland"] },   away: { type: "named", names: ["Marrocos", "Morocco"] } },
+  // Slots 4,5 → R16 M93
+  // Slot 4 — M83
   { home: { type: "named", names: ["Portugal"] },                            away: { type: "named", names: ["Croácia", "Croatia"] } },
-  // Slot 12
-  { home: { type: "named", names: ["Suíça", "Switzerland"] },                away: { type: "named", names: ["Argélia", "Algeria"] } },
-  // Slot 13
-  { home: { type: "named", names: ["Austrália", "Australia"] },              away: { type: "named", names: ["Egito", "Egypt"] } },
-  // Slot 14
+  // Slot 5 — M84
+  { home: { type: "named", names: ["Espanha", "Spain"] },                    away: { type: "named", names: ["Áustria", "Austria"] } },
+  // Slots 6,7 → R16 M94
+  // Slot 6 — M81
+  { home: { type: "named", names: ["Estados Unidos", "United States", "USA"] }, away: { type: "named", names: ["Bósnia", "Bosnia", "Bosnia and Herzegovina"] } },
+  // Slot 7 — M82
+  { home: { type: "named", names: ["Bélgica", "Belgium"] },                  away: { type: "named", names: ["Senegal"] } },
+  // ── Right half ───────────────────────────────────────────────────────────────
+  // Slots 8,9 → R16 M91
+  // Slot 8 — M76
+  { home: { type: "named", names: ["Brasil", "Brazil"] },                    away: { type: "named", names: ["Japão", "Japan"] } },
+  // Slot 9 — M78
+  { home: { type: "named", names: ["Costa do Marfim", "Ivory Coast", "Côte d'Ivoire"] }, away: { type: "named", names: ["Noruega", "Norway"] } },
+  // Slots 10,11 → R16 M92
+  // Slot 10 — M79
+  { home: { type: "named", names: ["México", "Mexico"] },                    away: { type: "named", names: ["Equador", "Ecuador"] } },
+  // Slot 11 — M80
+  { home: { type: "named", names: ["Inglaterra", "England"] },               away: { type: "named", names: ["RD Congo", "DR Congo", "Congo DR", "Democratic Republic of Congo"] } },
+  // Slots 12,13 → R16 M95
+  // Slot 12 — M86
   { home: { type: "named", names: ["Argentina"] },                           away: { type: "named", names: ["Cabo Verde", "Cape Verde"] } },
-  // Slot 15
+  // Slot 13 — M88
+  { home: { type: "named", names: ["Austrália", "Australia"] },              away: { type: "named", names: ["Egito", "Egypt"] } },
+  // Slots 14,15 → R16 M96
+  // Slot 14 — M85
+  { home: { type: "named", names: ["Suíça", "Switzerland"] },                away: { type: "named", names: ["Argélia", "Algeria"] } },
+  // Slot 15 — M87
   { home: { type: "named", names: ["Colômbia", "Colombia"] },                away: { type: "named", names: ["Gana", "Ghana"] } },
 ];
 
