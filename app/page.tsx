@@ -1,25 +1,22 @@
-import { getMatches, getStandings } from "@/lib/football-api";
+import { getMatches } from "@/lib/football-api";
 import MatchCard from "@/components/MatchCard";
-import BestThirdsPanel from "@/components/BestThirdsPanel";
 import type { Match } from "@/types/football";
 import Link from "next/link";
 
 async function getData() {
   try {
-    const [live, scheduled, finished, standingsData] = await Promise.all([
+    const [live, scheduled, finished] = await Promise.all([
       getMatches({ status: "IN_PLAY" }),
       getMatches({ status: "SCHEDULED" }),
       getMatches({ status: "FINISHED" }),
-      getStandings().catch(() => ({ standings: [] })),
     ]);
     return {
       liveMatches:     live.matches ?? [],
       upcomingMatches: (scheduled.matches ?? []).slice(0, 6),
       recentMatches:   (finished.matches ?? []).slice(-4).reverse(),
-      standings:       standingsData.standings ?? [],
     };
   } catch {
-    return { liveMatches: [], upcomingMatches: [], recentMatches: [], standings: [] };
+    return { liveMatches: [], upcomingMatches: [], recentMatches: [] };
   }
 }
 
@@ -79,7 +76,7 @@ function Section({ title, children, href, linkLabel }: {
 }
 
 export default async function HomePage() {
-  const { liveMatches, upcomingMatches, recentMatches, standings } = await getData();
+  const { liveMatches, upcomingMatches, recentMatches } = await getData();
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -128,9 +125,6 @@ export default async function HomePage() {
         <StatCard value="3" label="Países-sede" />
         <StatCard value={liveMatches.length > 0 ? liveMatches.length : "—"} label="Ao vivo" />
       </div>
-
-      {/* ── Best thirds ── */}
-      <BestThirdsPanel standings={standings} />
 
       {/* ── Live ── */}
       {liveMatches.length > 0 && (

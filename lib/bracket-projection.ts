@@ -3,23 +3,23 @@ import type { Match, Team, Group, Standing } from "@/types/football";
 /* ─────────────────────────────────────────────────────────────────────────────
  * Copa do Mundo 2026 — phase-aware bracket projection
  *
- * Official R32 bracket (FIFA draw, December 2024) — matches 73–88:
- *   Slot 0  (M74): W-E  vs 3rd(A/B/C/D/F)   → R16 M89 ┐
- *   Slot 1  (M77): W-I  vs 3rd(C/D/F/G/H)   → R16 M89 ┘ → QF M97 ┐
- *   Slot 2  (M73): 2nd-A vs 2nd-B            → R16 M90 ┐            │
- *   Slot 3  (M75): W-F  vs 2nd-C             → R16 M90 ┘ → QF M97 ┘ → SF-L
- *   Slot 4  (M83): 2nd-K vs 2nd-L            → R16 M93 ┐            │
- *   Slot 5  (M84): W-H  vs 2nd-J             → R16 M93 ┘ → QF M98 ┐ │
- *   Slot 6  (M81): W-D  vs 3rd(B/E/F/I/J)   → R16 M94 ┐            │
- *   Slot 7  (M82): W-G  vs 3rd(A/E/H/I/J)   → R16 M94 ┘ → QF M98 ┘ ┘
- *   Slot 8  (M76): W-C  vs 2nd-F             → R16 M91 ┐            ┐
- *   Slot 9  (M78): 2nd-E vs 2nd-I            → R16 M91 ┘ → QF M99 ┐ │
- *   Slot 10 (M79): W-A  vs 3rd(C/E/F/H/I)   → R16 M92 ┐            │
- *   Slot 11 (M80): W-L  vs 3rd(E/H/I/J/K)   → R16 M92 ┘ → QF M99 ┘ → SF-R
- *   Slot 12 (M86): W-J  vs 2nd-H             → R16 M95 ┐            │
- *   Slot 13 (M88): 2nd-D vs 2nd-G            → R16 M95 ┘ → QF M100 ┐│
- *   Slot 14 (M85): W-B  vs 3rd(E/F/G/I/J)   → R16 M96 ┐             │
- *   Slot 15 (M87): W-K  vs 3rd(D/E/I/J/L)   → R16 M96 ┘ → QF M100 ┘┘
+ * R32 hardcoded with confirmed FIFA pairings (June 2026):
+ *   Slot 0:  África do Sul  vs Canadá
+ *   Slot 1:  Brasil         vs Japão
+ *   Slot 2:  Alemanha       vs Paraguai
+ *   Slot 3:  Holanda        vs Marrocos
+ *   Slot 4:  Costa do Marfim vs Noruega
+ *   Slot 5:  França         vs Suécia
+ *   Slot 6:  México         vs Equador
+ *   Slot 7:  Inglaterra     vs RD Congo
+ *   Slot 8:  Bélgica        vs Senegal
+ *   Slot 9:  Estados Unidos vs Bósnia
+ *   Slot 10: Espanha        vs Áustria
+ *   Slot 11: Portugal       vs Croácia
+ *   Slot 12: Suíça          vs Argélia
+ *   Slot 13: Austrália      vs Egito
+ *   Slot 14: Argentina      vs Cabo Verde
+ *   Slot 15: Colômbia       vs Gana
  *
  * Phase-aware — only projects ONE round ahead:
  *   GROUP_STAGE → R32 PROJ,  R16/QF/SF/Final = TBD
@@ -118,8 +118,9 @@ export interface FullBracket {
 type SlotDef =
   | { type: "winner"; group: string }
   | { type: "runner"; group: string }
-  // eligibleGroups = groups whose 3rd-place qualifier can fill this slot
-  | { type: "best3"; eligibleGroups: string[] };
+  | { type: "best3"; eligibleGroups: string[] }
+  // names[0] = display name (PT), rest = aliases for API lookup (EN, etc.)
+  | { type: "named"; names: string[] };
 
 interface R32SlotDef { home: SlotDef; away: SlotDef }
 
@@ -138,39 +139,39 @@ interface R32SlotDef { home: SlotDef; away: SlotDef }
  */
 export const COPA_2026_R32: R32SlotDef[] = [
   // ── Left half ────────────────────────────────────────────────────────────────
-  // Slot 0 — Match 74 (June 29, Foxborough)
-  { home: { type: "winner", group: "E" }, away: { type: "best3", eligibleGroups: ["A","B","C","D","F"] } },
-  // Slot 1 — Match 77 (June 30, East Rutherford)
-  { home: { type: "winner", group: "I" }, away: { type: "best3", eligibleGroups: ["C","D","F","G","H"] } },
-  // Slot 2 — Match 73 (June 28, Inglewood)
-  { home: { type: "runner", group: "A" }, away: { type: "runner", group: "B" } },
-  // Slot 3 — Match 75 (June 29, Guadalajara)
-  { home: { type: "winner", group: "F" }, away: { type: "runner", group: "C" } },
-  // Slot 4 — Match 83 (July 2, Toronto)
-  { home: { type: "runner", group: "K" }, away: { type: "runner", group: "L" } },
-  // Slot 5 — Match 84 (July 2, Inglewood)
-  { home: { type: "winner", group: "H" }, away: { type: "runner", group: "J" } },
-  // Slot 6 — Match 81 (July 1, Santa Clara)
-  { home: { type: "winner", group: "D" }, away: { type: "best3", eligibleGroups: ["B","E","F","I","J"] } },
-  // Slot 7 — Match 82 (July 1, Seattle)
-  { home: { type: "winner", group: "G" }, away: { type: "best3", eligibleGroups: ["A","E","H","I","J"] } },
+  // Slot 0
+  { home: { type: "named", names: ["África do Sul", "South Africa"] },       away: { type: "named", names: ["Canadá", "Canada"] } },
+  // Slot 1
+  { home: { type: "named", names: ["Brasil", "Brazil"] },                    away: { type: "named", names: ["Japão", "Japan"] } },
+  // Slot 2
+  { home: { type: "named", names: ["Alemanha", "Germany"] },                 away: { type: "named", names: ["Paraguai", "Paraguay"] } },
+  // Slot 3
+  { home: { type: "named", names: ["Holanda", "Netherlands", "Holland"] },   away: { type: "named", names: ["Marrocos", "Morocco"] } },
+  // Slot 4
+  { home: { type: "named", names: ["Costa do Marfim", "Ivory Coast", "Côte d'Ivoire"] }, away: { type: "named", names: ["Noruega", "Norway"] } },
+  // Slot 5
+  { home: { type: "named", names: ["França", "France"] },                    away: { type: "named", names: ["Suécia", "Sweden"] } },
+  // Slot 6
+  { home: { type: "named", names: ["México", "Mexico"] },                    away: { type: "named", names: ["Equador", "Ecuador"] } },
+  // Slot 7
+  { home: { type: "named", names: ["Inglaterra", "England"] },               away: { type: "named", names: ["RD Congo", "DR Congo", "Congo DR", "Democratic Republic of Congo"] } },
   // ── Right half ───────────────────────────────────────────────────────────────
-  // Slot 8 — Match 76 (June 29, Houston)
-  { home: { type: "winner", group: "C" }, away: { type: "runner", group: "F" } },
-  // Slot 9 — Match 78 (June 30, Arlington)
-  { home: { type: "runner", group: "E" }, away: { type: "runner", group: "I" } },
-  // Slot 10 — Match 79 (June 30, Mexico City)
-  { home: { type: "winner", group: "A" }, away: { type: "best3", eligibleGroups: ["C","E","F","H","I"] } },
-  // Slot 11 — Match 80 (July 1, Atlanta)
-  { home: { type: "winner", group: "L" }, away: { type: "best3", eligibleGroups: ["E","H","I","J","K"] } },
-  // Slot 12 — Match 86 (July 3, Miami Gardens)
-  { home: { type: "winner", group: "J" }, away: { type: "runner", group: "H" } },
-  // Slot 13 — Match 88 (July 3, Arlington)
-  { home: { type: "runner", group: "D" }, away: { type: "runner", group: "G" } },
-  // Slot 14 — Match 85 (July 2, Vancouver)
-  { home: { type: "winner", group: "B" }, away: { type: "best3", eligibleGroups: ["E","F","G","I","J"] } },
-  // Slot 15 — Match 87 (July 3, Kansas City)
-  { home: { type: "winner", group: "K" }, away: { type: "best3", eligibleGroups: ["D","E","I","J","L"] } },
+  // Slot 8
+  { home: { type: "named", names: ["Bélgica", "Belgium"] },                  away: { type: "named", names: ["Senegal"] } },
+  // Slot 9
+  { home: { type: "named", names: ["Estados Unidos", "United States", "USA"] }, away: { type: "named", names: ["Bósnia", "Bosnia", "Bosnia and Herzegovina"] } },
+  // Slot 10
+  { home: { type: "named", names: ["Espanha", "Spain"] },                    away: { type: "named", names: ["Áustria", "Austria"] } },
+  // Slot 11
+  { home: { type: "named", names: ["Portugal"] },                            away: { type: "named", names: ["Croácia", "Croatia"] } },
+  // Slot 12
+  { home: { type: "named", names: ["Suíça", "Switzerland"] },                away: { type: "named", names: ["Argélia", "Algeria"] } },
+  // Slot 13
+  { home: { type: "named", names: ["Austrália", "Australia"] },              away: { type: "named", names: ["Egito", "Egypt"] } },
+  // Slot 14
+  { home: { type: "named", names: ["Argentina"] },                           away: { type: "named", names: ["Cabo Verde", "Cape Verde"] } },
+  // Slot 15
+  { home: { type: "named", names: ["Colômbia", "Colombia"] },                away: { type: "named", names: ["Gana", "Ghana"] } },
 ];
 
 // ── Internal helpers ──────────────────────────────────────────────────────────
@@ -182,6 +183,26 @@ export function groupLetter(raw: string): string {
 const TBD_TEAM: ResolvedTeam["team"] = {
   id: 0, name: "A definir", shortName: "TBD", tla: "TBD", crest: "",
 };
+
+function normalizeStr(s: string): string {
+  return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
+}
+
+function findTeamInStandings(standings: Group[], names: string[]): Team | null {
+  const needles = names.map(normalizeStr);
+  for (const group of standings) {
+    for (const row of group.table) {
+      const t = row.team;
+      const candidates = [t.name, t.shortName, t.tla]
+        .filter(Boolean)
+        .map(s => normalizeStr(s!));
+      if (candidates.some(c => needles.some(n => c === n || c.includes(n) || n.includes(c)))) {
+        return t;
+      }
+    }
+  }
+  return null;
+}
 
 function teamAtPos(standings: Group[], letter: string, pos: number): Team | null {
   const g   = standings.find(s => groupLetter(s.group) === letter);
@@ -253,6 +274,13 @@ function resolveSlot(
   standings: Group[],
   best3Assignment: Map<string, { team: Team; group: string }>,
 ): ResolvedTeam {
+  if (def.type === "named") {
+    return {
+      team: findTeamInStandings(standings, def.names) ?? TBD_TEAM,
+      isProjected: true,
+      sourceLabel: def.names[0],
+    };
+  }
   if (def.type === "winner") {
     return {
       team: teamAtPos(standings, def.group, 1) ?? TBD_TEAM,
@@ -380,10 +408,19 @@ export function buildFullBracket(
     }));
 
   // ── R32 ─────────────────────────────────────────────────────────────────────
+  // isPlaceholder: API sometimes returns "Winner Group X" before teams are confirmed
+  const isPlaceholderName = (name?: string) =>
+    !name || WINNER_RE.test(name) || RUNNER_RE.test(name) || THIRD_RE.test(name) || BEST3_RE.test(name);
+
   const apiR32 = byStage("ROUND_OF_32");
   const r32: ProjectedMatch[] = COPA_2026_R32.map((slot, i): ProjectedMatch => {
     const apiMatch = apiR32[i];
-    if (apiMatch) return fromApi(apiMatch);
+    // Only use API match when both sides have real confirmed team names
+    if (apiMatch &&
+        !isPlaceholderName(apiMatch.homeTeam?.name) &&
+        !isPlaceholderName(apiMatch.awayTeam?.name)) {
+      return fromApi(apiMatch);
+    }
     return {
       home: resolveSlot(slot.home, `${i}:home`, standings, best3Assignment),
       away: resolveSlot(slot.away, `${i}:away`, standings, best3Assignment),
