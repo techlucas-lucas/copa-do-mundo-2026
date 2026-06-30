@@ -11,8 +11,8 @@ import type {
 import { PHASE_LABELS } from "@/lib/bracket-projection";
 
 const POLL_MS  = 30_000;
-const BASE_W   = 90;   // px per R32 slot — determines all bracket proportions
-const CONN_H   = 28;   // px height for connector rows between rounds
+const BASE_W   = 110;  // px per R32 slot — determines all bracket proportions
+const CONN_H   = 32;   // px height for connector rows between rounds
 
 interface BracketResponse {
   bracket: FullBracket;
@@ -332,12 +332,12 @@ export default function BracketClient({ initial }: { initial: BracketResponse })
       {/* Legend */}
       <div className="flex flex-wrap items-center gap-5 text-xs text-gray-500 mb-5">
         <div className="flex items-center gap-1.5">
-          <div className="w-8 h-px bg-gray-600" />
-          <span>Confirmado pela FIFA</span>
+          <div className="w-8 h-px bg-gray-500" />
+          <span>Confirmado</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-8 h-px border-t border-dashed border-gray-600" />
-          <span>A definir</span>
+          <span>Aguardando resultado</span>
         </div>
       </div>
 

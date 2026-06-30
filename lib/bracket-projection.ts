@@ -61,10 +61,12 @@ const STAGE_ALIASES: Record<string, string> = {
 function canonicalStage(s: string): string { return STAGE_ALIASES[s] ?? s; }
 
 export function detectPhase(allMatches: Match[], apiKnockout: Match[]): TournamentPhase {
-  // Only count matches with real (non-empty) team names — excludes FIFA placeholder matches
+  // Only count matches where BOTH teams have real (non-placeholder) names
   const real = (canonical: string) =>
     apiKnockout.filter(m =>
-      canonicalStage(m.stage) === canonical && m.homeTeam?.name && m.awayTeam?.name
+      canonicalStage(m.stage) === canonical &&
+      !isPlaceholderName(m.homeTeam?.name) &&
+      !isPlaceholderName(m.awayTeam?.name)
     );
   const allDone = (ms: Match[]) =>
     ms.length > 0 && ms.every(m => m.status === "FINISHED");
@@ -303,7 +305,7 @@ function resolveSlot(
   if (def.type === "named") {
     return {
       team: findTeamInStandings(standings, def.names) ?? TBD_TEAM,
-      isProjected: true,
+      isProjected: false,
       sourceLabel: def.names[0],
     };
   }
@@ -334,6 +336,14 @@ const WINNER_RE = /(?:winner|1st|1°|1º)\s+group\s+([A-L])/i;
 const RUNNER_RE = /(?:runner.?up|2nd|2°|2º)\s+group\s+([A-L])/i;
 const THIRD_RE  = /(?:third|3rd|3°|3º)\s+group\s+([A-L])/i;
 const BEST3_RE  = /best\s+(?:third|3rd)/i;
+const WINNER_MATCH_RE = /winner\s+match/i;
+
+function isPlaceholderName(name?: string): boolean {
+  return !name ||
+    WINNER_RE.test(name) || RUNNER_RE.test(name) ||
+    THIRD_RE.test(name)  || BEST3_RE.test(name)  ||
+    WINNER_MATCH_RE.test(name);
+}
 
 function resolveApiTeam(
   apiTeam: Team,
@@ -387,13 +397,13 @@ function buildNextRound(prev: ProjectedMatch[], stage: string): ProjectedMatch[]
 function winnerOf(m: ProjectedMatch): ResolvedTeam {
   if (m.score?.winner === "HOME_TEAM") return { ...m.home, isProjected: false };
   if (m.score?.winner === "AWAY_TEAM") return { ...m.away, isProjected: false };
-  return { ...m.home, isProjected: true };
+  return { team: TBD_TEAM, isProjected: false, sourceLabel: "A definir" };
 }
 
 function loserOf(m: ProjectedMatch): ResolvedTeam {
   if (m.score?.winner === "HOME_TEAM") return { ...m.away, isProjected: false };
   if (m.score?.winner === "AWAY_TEAM") return { ...m.home, isProjected: false };
-  return { ...m.away, isProjected: true };
+  return { team: TBD_TEAM, isProjected: false, sourceLabel: "A definir" };
 }
 
 // ── Main entry point ──────────────────────────────────────────────────────────
@@ -426,19 +436,7 @@ export function buildFullBracket(
     };
   }
 
-  const tbd = (n: number, stage: string): ProjectedMatch[] =>
-    Array.from({ length: n }, () => ({
-      home: { team: TBD_TEAM, isProjected: false, sourceLabel: "A definir" },
-      away: { team: TBD_TEAM, isProjected: false, sourceLabel: "A definir" },
-      stage,
-      isConfirmed: false,
-    }));
-
   // ── R32 ─────────────────────────────────────────────────────────────────────
-  // isPlaceholder: API sometimes returns "Winner Group X" before teams are confirmed
-  const isPlaceholderName = (name?: string) =>
-    !name || WINNER_RE.test(name) || RUNNER_RE.test(name) || THIRD_RE.test(name) || BEST3_RE.test(name);
-
   const apiR32 = byStage("ROUND_OF_32");
   const r32: ProjectedMatch[] = COPA_2026_R32.map((slot, i): ProjectedMatch => {
     // For named slots, find the matching API match by team name — NOT by date-order index,
@@ -461,43 +459,39 @@ export function buildFullBracket(
   });
 
   // ── R16 ─────────────────────────────────────────────────────────────────────
+  // Only use API data when ALL 8 R16 matches are confirmed (avoids partial data from the API
+  // pre-populating R16 with placeholder names while R32 is still in progress).
+  // When R32 is in progress, build from actual R32 results — winnerOf() returns TBD for
+  // unfinished games, so the structure stays correct as matches complete one by one.
   let r16: ProjectedMatch[];
-  if (!phaseGte(phase, "ROUND_OF_32")) {
-    r16 = tbd(8, "ROUND_OF_16");
-  } else {
+  {
     const apiR16 = byStage("ROUND_OF_16");
-    r16 = apiR16.length > 0 ? apiR16.map(fromApi) : buildNextRound(r32, "ROUND_OF_16");
+    r16 = apiR16.length >= 8 ? apiR16.map(fromApi) : buildNextRound(r32, "ROUND_OF_16");
   }
 
   // ── QF ──────────────────────────────────────────────────────────────────────
   let qf: ProjectedMatch[];
-  if (!phaseGte(phase, "ROUND_OF_16")) {
-    qf = tbd(4, "QUARTER_FINALS");
-  } else {
+  {
     const apiQF = byStage("QUARTER_FINALS");
-    qf = apiQF.length > 0 ? apiQF.map(fromApi) : buildNextRound(r16, "QUARTER_FINALS");
+    qf = apiQF.length >= 4 ? apiQF.map(fromApi) : buildNextRound(r16, "QUARTER_FINALS");
   }
 
   // ── SF ──────────────────────────────────────────────────────────────────────
   let sf: ProjectedMatch[];
-  if (!phaseGte(phase, "QUARTER_FINALS")) {
-    sf = tbd(2, "SEMI_FINALS");
-  } else {
+  {
     const apiSF = byStage("SEMI_FINALS");
-    sf = apiSF.length > 0 ? apiSF.map(fromApi) : buildNextRound(qf, "SEMI_FINALS");
+    sf = apiSF.length >= 2 ? apiSF.map(fromApi) : buildNextRound(qf, "SEMI_FINALS");
   }
 
   // ── Final ────────────────────────────────────────────────────────────────────
   let final: ProjectedMatch | undefined;
-  if (!phaseGte(phase, "SEMI_FINALS")) {
-    final = tbd(1, "FINAL")[0];
-  } else {
-    const apiFiReal = byStage("FINAL")[0];
+  {
+    const apiFiReal = phaseGte(phase, "FINAL") ? byStage("FINAL")[0] : undefined;
     if (apiFiReal) {
       final = fromApi(apiFiReal);
     } else {
       const projected = buildNextRound(sf, "FINAL")[0];
-      const apiFiSched = apiKnockout.find(m => m.stage === "FINAL");
+      const apiFiSched = apiKnockout.find(m => canonicalStage(m.stage) === "FINAL");
       final = projected && apiFiSched
         ? { ...projected, utcDate: apiFiSched.utcDate, matchId: apiFiSched.id }
         : projected;
@@ -506,10 +500,8 @@ export function buildFullBracket(
 
   // ── 3rd place ────────────────────────────────────────────────────────────────
   let thirdPlace: ProjectedMatch | undefined;
-  if (!phaseGte(phase, "SEMI_FINALS")) {
-    thirdPlace = tbd(1, "THIRD_PLACE")[0];
-  } else {
-    const apiTpReal = byStage("THIRD_PLACE")[0];
+  {
+    const apiTpReal = phaseGte(phase, "FINAL") ? byStage("THIRD_PLACE")[0] : undefined;
     if (apiTpReal) {
       thirdPlace = fromApi(apiTpReal);
     } else {
